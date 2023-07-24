@@ -48,15 +48,24 @@ class PackagesStack:
 
         return head.full_n_v
 
+def check_fileobject(path: str, fileobject: str):
+    try:
+        if fileobject == 'file' and not Path(path).is_file():
+            raise FileNotFoundError(path, fileobject)
+        if fileobject == 'directory' and not Path(path).is_dir():
+            raise FileNotFoundError(path, fileobject)
+    except FileNotFoundError as err:
+        p, o = err.args
+        print(f'Invalid {o}, missing {p} in:')
+        print(Path.cwd())
+        exit(1)
+
 def main(args):
     base_dir = args.base_dir
-    try:
-        if not Path(base_dir).is_dir():
-            raise FileNotFoundError
-    except FileNotFoundError:
-        print(f'Invalid or Missing directory: {base_dir}')
-        print(Path.cwd())
-        exit()
+    pkg_list = args.pkg_list
+
+    check_fileobject(base_dir, 'directory')
+    check_fileobject(pkg_list, 'file')
 
     packages = PackagesStack()
 
@@ -85,6 +94,6 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('base_dir')
-    parser.add_argument('pkg_list') # not yet implemented - put 0
+    parser.add_argument('pkg_list')
     args = parser.parse_args()
     exit(main(args=args))
