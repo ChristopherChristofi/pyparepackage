@@ -61,18 +61,18 @@ def check_fileobject(path: str, fileobject: str):
         exit(1)
 
 def main(args):
-    base_dir = args.base_dir
-    pkg_list = args.pkg_list
+    base_dir = args.main_dir
+    base_file = args.pkg_list
 
     check_fileobject(base_dir, 'directory')
-    check_fileobject(pkg_list, 'file')
+    check_fileobject(base_file, 'file')
 
     packages = PackagesStack()
 
     for _filename in Path(base_dir).iterdir():
         if _filename.suffix == '.yaml':
-            pkg_yaml = _filename.open().read()
-            yaml_data = yaml.safe_load(pkg_yaml)
+            _pkg_yaml = _filename.open().read()
+            yaml_data = yaml.safe_load(_pkg_yaml)
             [
                 packages.push(
                     n=_filename.stem,
@@ -81,19 +81,17 @@ def main(args):
                 for version in yaml_data['versions'].keys()
             ]
 
-    # show debug of extracted data      
-    total_packages = packages.length + 1 # force 1 None
-    print(total_packages)
-    i: int = 0
-    while i < total_packages:
-        pkg = packages.pop()
-        if pkg:
-            print(pkg)
-        i += 1
+    with open(Path(base_file), 'r') as f:
+        _filelist_pkgs = list(map(str.strip, f))
+
+    while packages.length:
+        package_name_version = packages.pop()
+        if package_name_version not in _filelist_pkgs:
+            print(package_name_version)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('base_dir')
+    parser.add_argument('main_dir')
     parser.add_argument('pkg_list')
     args = parser.parse_args()
     exit(main(args=args))
