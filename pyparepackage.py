@@ -3,22 +3,24 @@ import yaml
 import argparse
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Optional, Generic, TypeVar
+
+T = TypeVar('T')
 
 @dataclass
-class PackageNode:
+class PackageNode(Generic[T]):
     name: str
     version: str
     full_n_v: str
-    prev: Optional[Any]
+    prev: Optional[T]
 
-class PackagesStack:
+class PackagesStack(PackageNode):
     def __init__(self) -> None:
         self.length: int = 0
         self.head: Optional[PackageNode] = None
 
     def push(self, n: str, v: str):
-        pkg_node = PackageNode(
+        pkg_node: PackageNode = PackageNode(
             name=n,
             version=v,
             full_n_v=f'{n}@{v}',
@@ -33,7 +35,7 @@ class PackagesStack:
         pkg_node.prev = self.head
         self.head = pkg_node
 
-    def pop(self) -> Optional[str]:
+    def pop(self):
         self.length = max([0, self.length - 1])
         if self.length == 0:
             head = self.head
